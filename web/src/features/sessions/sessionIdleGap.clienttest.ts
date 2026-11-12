@@ -3,6 +3,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  computeIdleGapBetweenSeconds,
   computeIdleGapSeconds,
   formatIdleGap,
 } from "@/src/features/sessions/sessionIdleGap";
@@ -26,6 +27,20 @@ describe("sessionIdleGap", () => {
     const current = { timestamp: new Date("2026-01-01T12:01:00.000Z") };
 
     expect(computeIdleGapSeconds(previous, current)).toBe(0);
+  });
+
+  it("measures the same gap between neighbours listed newest first", () => {
+    const older = {
+      timestamp: new Date("2026-01-01T12:00:00.000Z"),
+      latencyMs: 60_000,
+    };
+    const newer = {
+      timestamp: new Date("2026-01-01T12:06:00.000Z"),
+      latencyMs: 0,
+    };
+
+    expect(computeIdleGapBetweenSeconds(newer, older)).toBe(300);
+    expect(computeIdleGapBetweenSeconds(older, newer)).toBe(300);
   });
 
   it("formats gaps as rounded minutes or hours", () => {

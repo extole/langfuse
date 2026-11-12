@@ -721,7 +721,10 @@ const LoadedSessionEventsPage: React.FC<{
   const isInternalFeaturesEnabled = useInternalFeaturesEnabled();
   const [isRedesignBannerDismissed, setIsRedesignBannerDismissed] =
     useLocalStorage("sessionRedesignBannerDismissed", false);
-  const [turnOrder, setTurnOrder] = useSessionTurnOrder("session_detail");
+  const [turnOrder, setTurnOrder] = useSessionTurnOrder({
+    surface: "session_detail",
+    isV4: true,
+  });
   const orderedTraces = traces
     ? orderSessionTraces(traces, turnOrder)
     : undefined;
@@ -1438,8 +1441,10 @@ const LoadedSessionEventsPage: React.FC<{
                   type: "checkbox" as const,
                   label: "Newest first",
                   checked: turnOrder === "newest-first",
-                  onCheckedChange: (checked: boolean) =>
-                    setTurnOrder(checked ? "newest-first" : "oldest-first"),
+                  onCheckedChange: (checked: boolean) => {
+                    setTurnOrder(checked ? "newest-first" : "oldest-first");
+                    virtualizer.scrollToOffset(0);
+                  },
                 },
                 ...(!isModernSessionEnabled
                   ? [
@@ -1599,11 +1604,7 @@ const LoadedSessionEventsPage: React.FC<{
                       </SessionControlsBar>
                     ) : null}
                     {!isModernSessionEnabled ? (
-                      <div
-                        key={turnOrder}
-                        ref={parentRef}
-                        className="flex-1 overflow-auto p-4"
-                      >
+                      <div ref={parentRef} className="flex-1 overflow-auto p-4">
                         <div
                           style={{
                             height: `${virtualizer.getTotalSize()}px`,
