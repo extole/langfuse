@@ -188,6 +188,7 @@ const toSidebarTraces = (
 ): ModernSessionSidebarTrace[] =>
   sourceTraces.map((trace, index) => ({
     trace,
+    traceIndex: index,
     turnNumber: index + 1,
     idleGapSeconds:
       index === 0

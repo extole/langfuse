@@ -5,6 +5,7 @@ import { type FilterState } from "@langfuse/shared";
 import { LazySessionTraceEventsRow } from "@/src/features/sessions/LazySessionTraceEventsRow";
 import { SessionVirtualizedRow } from "@/src/features/sessions/SessionVirtualizedRow";
 import { type EventSessionTrace } from "@/src/features/sessions/sessionDetailPageTypes";
+import { type SessionTurnOrder } from "@/src/features/sessions/sessionTurnOrder";
 import { useElementSize } from "@/src/hooks/useElementSize";
 import { useSessionSidebarData } from "@/src/features/sessions/hooks/useSessionSidebarData";
 import { useSessionObservationNavigation } from "@/src/features/sessions/hooks/useSessionObservationNavigation";
@@ -21,6 +22,7 @@ type ConnectedModernSessionBodyLegacyProps = {
   tracesState:
     | { type: "loading" }
     | { type: "loaded"; traces: EventSessionTrace[] };
+  turnOrder: SessionTurnOrder;
   projectId: string;
   sessionId: string;
   sessionMinTimestamp: Date;
@@ -41,6 +43,7 @@ type ConnectedModernSessionBodyLegacyProps = {
 
 export function ConnectedModernSessionBodyLegacy({
   tracesState,
+  turnOrder,
   projectId,
   sessionId,
   sessionMinTimestamp,
@@ -72,6 +75,7 @@ export function ConnectedModernSessionBodyLegacy({
     toggleTraceExpanded,
   } = useSessionSidebarData({
     traces,
+    turnOrder,
     projectId,
     sessionId,
     sessionMinTimestamp,

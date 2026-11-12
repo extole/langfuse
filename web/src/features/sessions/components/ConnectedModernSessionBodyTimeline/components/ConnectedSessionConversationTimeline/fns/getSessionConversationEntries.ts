@@ -4,6 +4,8 @@ import { getSessionTranscriptThreads } from "./getSessionTranscriptThreads";
 export function getSessionConversationEntries(
   traces: readonly {
     trace: { id: string };
+    /** Chronological turn number, independent of the display order. */
+    turnNumber: number;
     transcript:
       | RouterOutputs["events"]["transcriptByTraceId"]["transcript"]
       | undefined;
@@ -16,7 +18,7 @@ export function getSessionConversationEntries(
   const useThreadNumbers = visibility.some(
     ({ visibleThreads }) => visibleThreads.length > 1,
   );
-  return traces.flatMap(({ trace, transcript }, traceIndex) => {
+  return traces.flatMap(({ trace, turnNumber, transcript }, traceIndex) => {
     const { visibleThreads } = visibility[traceIndex]!;
     const threads = visibleThreads.length
       ? visibleThreads
@@ -33,8 +35,8 @@ export function getSessionConversationEntries(
           : undefined,
       displayNumber:
         useThreadNumbers && threadIndex !== undefined
-          ? `${traceIndex + 1}.${visibleIndex + 1}`
-          : String(traceIndex + 1),
+          ? `${turnNumber}.${visibleIndex + 1}`
+          : String(turnNumber),
       isFirstThread: visibleIndex === 0,
     }));
   });

@@ -4,13 +4,18 @@ import { type EventSessionTrace } from "@/src/features/sessions/sessionDetailPag
 import { useDebounce } from "@/src/hooks/useDebounce";
 import { api } from "@/src/utils/api";
 import { type ModernSessionSidebarTrace } from "@/src/features/sessions/ModernSessionSidebar";
-import { computeIdleGapSeconds } from "@/src/features/sessions/sessionIdleGap";
+import { computeIdleGapBetweenSeconds } from "@/src/features/sessions/sessionIdleGap";
+import {
+  getSessionTurnNumber,
+  type SessionTurnOrder,
+} from "@/src/features/sessions/sessionTurnOrder";
 
 const SIDEBAR_TRACE_CHUNK_SIZE = 20;
 const SIDEBAR_OBSERVATION_PAGE_SIZE = 100;
 
 export function useSessionSidebarData({
   traces,
+  turnOrder,
   projectId,
   sessionId,
   sessionMinTimestamp,
@@ -19,7 +24,9 @@ export function useSessionSidebarData({
   filterMeasurementKey,
   includeTraceLevelObservations,
 }: {
+  /** In display order, as `orderSessionTraces` returns them. */
   traces: EventSessionTrace[];
+  turnOrder: SessionTurnOrder;
   projectId: string;
   sessionId: string;
   sessionMinTimestamp: Date;
@@ -215,9 +222,16 @@ export function useSessionSidebarData({
       continue;
     sidebarTraces.push({
       trace,
-      turnNumber: index + 1,
+      traceIndex: index,
+      turnNumber: getSessionTurnNumber({
+        displayIndex: index,
+        traceCount: traces.length,
+        order: turnOrder,
+      }),
       idleGapSeconds:
-        index === 0 ? null : computeIdleGapSeconds(traces[index - 1]!, trace),
+        index === 0
+          ? null
+          : computeIdleGapBetweenSeconds(traces[index - 1]!, trace),
       observations,
       hasMatchingTraceLevelIO:
         filtersRequireIO && traceIdsWithMatchingTraceLevelIO.has(trace.id),

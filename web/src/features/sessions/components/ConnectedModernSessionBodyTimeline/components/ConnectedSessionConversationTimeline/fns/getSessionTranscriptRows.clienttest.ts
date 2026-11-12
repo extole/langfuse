@@ -210,9 +210,10 @@ describe("getSessionTranscriptRows", () => {
   it("flattens visible threads with contiguous labels but original identities", () => {
     const base = transcript.threads[0]!;
     const entries = getSessionConversationEntries([
-      { trace: { id: "single" }, transcript },
+      { trace: { id: "single" }, turnNumber: 1, transcript },
       {
         trace: { id: "multi" },
+        turnNumber: 2,
         transcript: {
           threads: [
             base,
@@ -221,7 +222,7 @@ describe("getSessionTranscriptRows", () => {
           ],
         },
       },
-      { trace: { id: "loading" }, transcript: undefined },
+      { trace: { id: "loading" }, turnNumber: 3, transcript: undefined },
     ]);
     expect(entries).toMatchObject([
       {
@@ -257,16 +258,42 @@ describe("getSessionTranscriptRows", () => {
     ]);
     expect(
       getSessionConversationEntries([
-        { trace: { id: "single" }, transcript },
+        { trace: { id: "single" }, turnNumber: 1, transcript },
       ])[0],
     ).toMatchObject({ displayNumber: "1", threadNumber: undefined });
   });
+  it("labels newest-first turns by their chronological number and keeps thread order", () => {
+    const base = transcript.threads[0]!;
+    const entries = getSessionConversationEntries([
+      {
+        trace: { id: "newest" },
+        turnNumber: 2,
+        transcript: {
+          threads: [
+            base,
+            { ...base, currentTurn: { ...base.currentTurn, nestingLevel: 1 } },
+            base,
+          ],
+        },
+      },
+      { trace: { id: "oldest" }, turnNumber: 1, transcript },
+    ]);
+    expect(
+      entries.map(({ itemId, displayNumber }) => [itemId, displayNumber]),
+    ).toEqual([
+      ["newest:0", "2.1"],
+      ["newest:2", "2.2"],
+      ["oldest:0", "1.1"],
+    ]);
+  });
+
   it("keeps empty visible threads and does not count hidden threads for decimal mode", () => {
     const base = transcript.threads[0]!;
     expect(
       getSessionConversationEntries([
         {
           trace: { id: "empty-thread" },
+          turnNumber: 1,
           transcript: {
             threads: [
               { ...base, currentTurn: { ...base.currentTurn, messages: [] } },
@@ -277,7 +304,7 @@ describe("getSessionTranscriptRows", () => {
             ],
           },
         },
-        { trace: { id: "no-transcript" }, transcript: null },
+        { trace: { id: "no-transcript" }, turnNumber: 2, transcript: null },
       ]),
     ).toMatchObject([
       {
@@ -376,7 +403,13 @@ describe("getSessionTranscriptRows", () => {
     });
     expect(
       getSessionConversationEntries(
-        [{ trace: { id: "trace" }, transcript: nestedTranscript }],
+        [
+          {
+            trace: { id: "trace" },
+            turnNumber: 1,
+            transcript: nestedTranscript,
+          },
+        ],
         true,
       ),
     ).toMatchObject([

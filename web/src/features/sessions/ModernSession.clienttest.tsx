@@ -68,6 +68,7 @@ const defaultProps = {
     },
   },
   onFilterObservationByName: vi.fn(),
+  turnOrder: "oldest-first",
 } satisfies ComponentProps<typeof ModernSession>;
 
 describe("ModernSession", () => {

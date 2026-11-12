@@ -8,6 +8,9 @@ import { AnnotationProcessingLayout } from "../shared/AnnotationProcessingLayout
 import { SessionIO } from "@/src/features/sessions/SessionPages";
 import { LazyTraceEventsRow } from "@/src/features/sessions/TraceEventsRow";
 import { asCommentCounts } from "@/src/features/sessions/sessionDetailPageTypes";
+import { orderSessionTraces } from "@/src/features/sessions/sessionTurnOrder";
+import { useSessionTurnOrder } from "@/src/features/sessions/useSessionTurnOrder";
+import { Switch } from "@/src/components/design-system/Switch/Switch";
 import { useState, useMemo, useCallback } from "react";
 import { Button } from "@/src/components/ui/button";
 import { Button as DsButton } from "@/src/components/design-system/Button/Button";
@@ -52,6 +55,7 @@ export const SessionAnnotationProcessor: React.FC<
     setVisibleTraces((prev) => prev + PAGE_SIZE);
   };
   const { isV4 } = useReadPath();
+  const [turnOrder, setTurnOrder] = useSessionTurnOrder("annotation_queue");
 
   // Fetch traces separately when v4 beta is enabled (events table path)
   // The byIdWithScoresFromEvents endpoint doesn't include traces array
@@ -81,12 +85,13 @@ export const SessionAnnotationProcessor: React.FC<
   // Unify traces from both paths:
   // - v4 beta OFF: traces come from data.traces (byIdWithScores endpoint)
   // - v4 beta ON: traces come from separate tracesFromEvents query
-  const traces = useMemo(() => {
+  const chronologicalTraces = useMemo(() => {
     if (isV4) {
       return tracesFromEventsQuery.data ?? [];
     }
     return data?.traces ?? [];
   }, [isV4, tracesFromEventsQuery.data, data?.traces]);
+  const traces = orderSessionTraces(chronologicalTraces, turnOrder);
 
   // For the "Total traces" badge, show countTraces from session metadata when available (v4),
   // or fall back to loaded traces length
@@ -176,7 +181,7 @@ export const SessionAnnotationProcessor: React.FC<
             )}
           </CommentDrawerController>
         </div>
-        <div className="mt-2 mb-4 grid w-full min-w-0 items-center justify-between px-4">
+        <div className="mt-2 mb-4 flex w-full min-w-0 flex-wrap items-center justify-between gap-2 px-4">
           <div className="flex max-w-full min-w-0 shrink flex-col">
             <div className="flex max-w-full min-w-0 flex-wrap items-center gap-1">
               {data?.environment && (
@@ -188,12 +193,23 @@ export const SessionAnnotationProcessor: React.FC<
               />
             </div>
           </div>
+          <label className="flex items-center gap-2">
+            <span className="text-sm">Newest first</span>
+            <Switch
+              size="sm"
+              checked={turnOrder === "newest-first"}
+              onCheckedChange={(checked) => {
+                setTurnOrder(checked ? "newest-first" : "oldest-first");
+                setVisibleTraces(PAGE_SIZE);
+              }}
+            />
+          </label>
         </div>
         <Separator />
       </div>
 
       {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto">
+      <div key={turnOrder} className="flex-1 overflow-y-auto">
         <div className="p-4">
           {/* Loading state for v4 beta traces */}
           {isV4 && tracesFromEventsQuery.isLoading && (
