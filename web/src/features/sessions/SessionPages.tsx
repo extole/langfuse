@@ -725,9 +725,10 @@ const LoadedSessionEventsPage: React.FC<{
     surface: "session_detail",
     isV4: true,
   });
-  const orderedTraces = traces
-    ? orderSessionTraces(traces, turnOrder)
-    : undefined;
+  const orderedTraces = React.useMemo(
+    () => (traces ? orderSessionTraces(traces, turnOrder) : undefined),
+    [traces, turnOrder],
+  );
   const [viewModeQuery, setViewModeQuery] = useQueryParam(
     "sessionView",
     StringParam,

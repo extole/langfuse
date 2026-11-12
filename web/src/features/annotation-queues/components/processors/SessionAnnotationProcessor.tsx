@@ -94,7 +94,10 @@ export const SessionAnnotationProcessor: React.FC<
     }
     return data?.traces ?? [];
   }, [isV4, tracesFromEventsQuery.data, data?.traces]);
-  const traces = orderSessionTraces(chronologicalTraces, turnOrder);
+  const traces = useMemo(
+    () => orderSessionTraces(chronologicalTraces, turnOrder),
+    [chronologicalTraces, turnOrder],
+  );
 
   // For the "Total traces" badge, show countTraces from session metadata when available (v4),
   // or fall back to loaded traces length
