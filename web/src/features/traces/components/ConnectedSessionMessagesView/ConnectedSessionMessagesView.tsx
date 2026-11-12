@@ -43,10 +43,11 @@ export function ConnectedSessionMessagesView({
     ),
   });
   const entries = getSessionConversationEntries(
-    traces.map((trace) => {
+    traces.map((trace, index) => {
       const result = results.get(trace.id);
       return {
         trace,
+        turnNumber: index + 1,
         transcript: result?.state === "loaded" ? result.transcript : undefined,
       };
     }),

@@ -8,6 +8,15 @@ export const computeIdleGapSeconds = (
   return Math.max(0, (current.timestamp.getTime() - previousEnd) / 1000);
 };
 
+/** Idle time between two neighbouring traces, whichever of them is listed first. */
+export const computeIdleGapBetweenSeconds = (
+  first: { timestamp: Date; latencyMs: number | null },
+  second: { timestamp: Date; latencyMs: number | null },
+): number =>
+  first.timestamp.getTime() <= second.timestamp.getTime()
+    ? computeIdleGapSeconds(first, second)
+    : computeIdleGapSeconds(second, first);
+
 export const formatIdleGap = (seconds: number): string => {
   const rounded = Math.max(0, Math.round(seconds));
   if (rounded < 3600) return `${Math.round(rounded / 60)} min`;

@@ -67,6 +67,8 @@ type ObservationListRowsState =
 
 export type ModernSessionSidebarTrace = {
   trace: EventSessionTrace;
+  /** Position of the trace in the session feed, used to select it. */
+  traceIndex: number;
   turnNumber: number;
   idleGapSeconds: number | null;
   observations: ObservationListRow[] | null | undefined;
@@ -733,7 +735,7 @@ export function ModernSessionSidebar(
                         title={trace.name ?? "Trace"}
                         isActive={trace.id === activeTraceId}
                         number={sidebarTrace.turnNumber}
-                        onSelect={() => onSelect(sidebarTrace.turnNumber - 1)}
+                        onSelect={() => onSelect(sidebarTrace.traceIndex)}
                       >
                         <div className="mt-2">
                           {sidebarTrace.observations?.length === 0 && (
@@ -759,7 +761,7 @@ export function ModernSessionSidebar(
                                 }}
                                 onSelectObservation={(observationId) =>
                                   onSelect(
-                                    sidebarTrace.turnNumber - 1,
+                                    sidebarTrace.traceIndex,
                                     observationId,
                                   )
                                 }
@@ -780,7 +782,7 @@ export function ModernSessionSidebar(
                     {props.observationLayout !== "flat" && (
                       <TurnCard
                         sidebarTrace={sidebarTrace}
-                        selectIndex={sidebarTrace.turnNumber - 1}
+                        selectIndex={sidebarTrace.traceIndex}
                         isActive={trace.id === activeTraceId}
                         isCollapsed={isCollapsed}
                         onToggleCollapse={onToggleTraceExpanded}

@@ -42,6 +42,11 @@ import { LazyTraceRow } from "@/src/features/sessions/LazyTraceRow";
 import { useParsedTrace } from "@/src/hooks/useParsedTrace";
 import useLocalStorage from "@/src/components/useLocalStorage";
 import { LazySessionTraceEventsRow } from "@/src/features/sessions/LazySessionTraceEventsRow";
+import {
+  DEFAULT_SESSION_TURN_ORDER,
+  orderSessionTraces,
+} from "@/src/features/sessions/sessionTurnOrder";
+import { useSessionTurnOrder } from "@/src/features/sessions/useSessionTurnOrder";
 import { observationEventsFilterConfig } from "@/src/features/events/config/filter-config";
 import { useEventsFilterOptions } from "@/src/features/events/hooks/useEventsFilterOptions";
 import {
@@ -661,6 +666,7 @@ function SessionEventsLoadingPage({
           <div className="flex h-full min-h-0 flex-col overflow-hidden">
             <ConnectedModernSessionBodyTimeline
               tracesState={{ type: "loading" }}
+              turnOrder={DEFAULT_SESSION_TURN_ORDER}
               projectId={projectId}
               sessionId={sessionId}
               openPeek={noopOpenPeek}
@@ -715,6 +721,10 @@ const LoadedSessionEventsPage: React.FC<{
   const isInternalFeaturesEnabled = useInternalFeaturesEnabled();
   const [isRedesignBannerDismissed, setIsRedesignBannerDismissed] =
     useLocalStorage("sessionRedesignBannerDismissed", false);
+  const [turnOrder, setTurnOrder] = useSessionTurnOrder("session_detail");
+  const orderedTraces = traces
+    ? orderSessionTraces(traces, turnOrder)
+    : undefined;
   const [viewModeQuery, setViewModeQuery] = useQueryParam(
     "sessionView",
     StringParam,
@@ -1310,11 +1320,11 @@ const LoadedSessionEventsPage: React.FC<{
   ]);
 
   const virtualizer = useVirtualizer({
-    count: traces?.length ?? 0,
+    count: orderedTraces?.length ?? 0,
     getScrollElement: () => parentRef.current,
     estimateSize: () => 320,
     overscan: SESSION_VIRTUALIZER_OVERSCAN,
-    getItemKey: (index) => traces?.[index]?.id ?? index,
+    getItemKey: (index) => orderedTraces?.[index]?.id ?? index,
   });
   const virtualItems = virtualizer.getVirtualItems();
   return (
@@ -1423,6 +1433,14 @@ const LoadedSessionEventsPage: React.FC<{
                       },
                     ]
                   : []),
+                {
+                  id: "turn-order",
+                  type: "checkbox" as const,
+                  label: "Newest first",
+                  checked: turnOrder === "newest-first",
+                  onCheckedChange: (checked: boolean) =>
+                    setTurnOrder(checked ? "newest-first" : "oldest-first"),
+                },
                 ...(!isModernSessionEnabled
                   ? [
                       {
@@ -1581,7 +1599,11 @@ const LoadedSessionEventsPage: React.FC<{
                       </SessionControlsBar>
                     ) : null}
                     {!isModernSessionEnabled ? (
-                      <div ref={parentRef} className="flex-1 overflow-auto p-4">
+                      <div
+                        key={turnOrder}
+                        ref={parentRef}
+                        className="flex-1 overflow-auto p-4"
+                      >
                         <div
                           style={{
                             height: `${virtualizer.getTotalSize()}px`,
@@ -1590,7 +1612,7 @@ const LoadedSessionEventsPage: React.FC<{
                           }}
                         >
                           {virtualItems.map((virtualItem) => {
-                            const trace = traces?.[virtualItem.index];
+                            const trace = orderedTraces?.[virtualItem.index];
                             if (!trace) return null;
 
                             return (
@@ -1621,6 +1643,7 @@ const LoadedSessionEventsPage: React.FC<{
                       </div>
                     ) : (
                       <ModernSession
+                        key={turnOrder}
                         viewMode={viewMode}
                         customization={
                           isSessionTimelineEnabled && isInternalFeaturesEnabled
@@ -1635,9 +1658,10 @@ const LoadedSessionEventsPage: React.FC<{
                         session={session}
                         tracesState={
                           isTracesSuccess
-                            ? { type: "loaded", traces: traces ?? [] }
+                            ? { type: "loaded", traces: orderedTraces ?? [] }
                             : { type: "loading" }
                         }
+                        turnOrder={turnOrder}
                         projectId={projectId}
                         sessionId={sessionId}
                         openPeek={openPeek}

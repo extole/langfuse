@@ -2405,6 +2405,7 @@ function SessionConversationalViewStory({
   const entries = getSessionConversationEntries(
     displayedTraces.map((item) => ({
       trace: item.trace,
+      turnNumber: item.turnNumber,
       transcript:
         item.state.type === "transcript"
           ? item.state.result.transcript
