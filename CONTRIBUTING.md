@@ -56,7 +56,7 @@ A good first step is to search for open [issues](https://github.com/langfuse/lan
 
 We recommend checking out DeepWiki to familiarize yourself with the project:
 
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/langfuse/langfuse)
+[![Ask DeepWiki](https://img.shields.io/badge/Ask-DeepWiki-blue)](https://deepwiki.com/langfuse/langfuse)
 
 ### Technologies we use
 
