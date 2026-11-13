@@ -202,7 +202,6 @@ const events = {
     "inline_tools_toggled",
     "system_prompt_toggled",
     "metadata_jsonpath_config_changed",
-    "turn_order_changed",
   ],
   eval_config: [
     "new_form_submit",

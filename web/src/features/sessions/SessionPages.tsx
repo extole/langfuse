@@ -702,10 +702,7 @@ const LoadedSessionEventsPage: React.FC<{
   );
   const [isRedesignBannerDismissed, setIsRedesignBannerDismissed] =
     useLocalStorage("sessionRedesignBannerDismissed", false);
-  const [turnOrder, setTurnOrder] = useSessionTurnOrder({
-    surface: "session_detail",
-    isV4: true,
-  });
+  const [turnOrder, setTurnOrder] = useSessionTurnOrder();
   const orderedTraces = React.useMemo(
     () => (traces ? orderSessionTraces(traces, turnOrder) : undefined),
     [traces, turnOrder],

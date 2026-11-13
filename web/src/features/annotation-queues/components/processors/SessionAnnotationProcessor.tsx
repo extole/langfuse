@@ -55,10 +55,7 @@ export const SessionAnnotationProcessor: React.FC<
     setVisibleTraces((prev) => prev + PAGE_SIZE);
   };
   const { isV4 } = useReadPath();
-  const [turnOrder, setTurnOrder] = useSessionTurnOrder({
-    surface: "annotation_queue",
-    isV4,
-  });
+  const [turnOrder, setTurnOrder] = useSessionTurnOrder();
 
   // Fetch traces separately when v4 beta is enabled (events table path)
   // The byIdWithScoresFromEvents endpoint doesn't include traces array
