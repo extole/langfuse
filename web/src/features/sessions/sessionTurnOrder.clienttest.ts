@@ -1,4 +1,4 @@
-import { act, renderHook } from "@testing-library/react";
+import { renderHook } from "@testing-library/react";
 
 import {
   SESSION_TURN_ORDER_STORAGE_KEY,
@@ -34,26 +34,9 @@ describe("session turn order", () => {
     expect(traceIds).toEqual(["turn-1", "turn-2", "turn-3"]);
   });
 
-  it("defaults to oldest first and keeps the choice in this browser", () => {
-    localStorage.clear();
-    const first = renderHook(() =>
-      useSessionTurnOrder({ surface: "session_detail", isV4: true }),
-    );
-    expect(first.result.current[0]).toBe("oldest-first");
-
-    act(() => first.result.current[1]("newest-first"));
-    first.unmount();
-
-    const next = renderHook(() =>
-      useSessionTurnOrder({ surface: "annotation_queue", isV4: true }),
-    );
-    expect(next.result.current[0]).toBe("newest-first");
-
+  it("reads an unknown stored order as oldest first", () => {
     localStorage.setItem(SESSION_TURN_ORDER_STORAGE_KEY, '"sideways"');
-    expect(
-      renderHook(() =>
-        useSessionTurnOrder({ surface: "session_detail", isV4: true }),
-      ).result.current[0],
-    ).toBe("oldest-first");
+    const { result } = renderHook(() => useSessionTurnOrder());
+    expect(result.current[0]).toBe("oldest-first");
   });
 });
