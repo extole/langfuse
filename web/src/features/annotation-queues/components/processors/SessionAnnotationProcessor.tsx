@@ -11,7 +11,7 @@ import { asCommentCounts } from "@/src/features/sessions/sessionDetailPageTypes"
 import { orderSessionTraces } from "@/src/features/sessions/sessionTurnOrder";
 import { useSessionTurnOrder } from "@/src/features/sessions/useSessionTurnOrder";
 import { Switch } from "@/src/components/design-system/Switch/Switch";
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useRef } from "react";
 import { Button } from "@/src/components/ui/button";
 import { Button as DsButton } from "@/src/components/design-system/Button/Button";
 import { ActionButtonCountBadge } from "@/src/components/ui/ActionButtonCountBadge";
@@ -56,6 +56,7 @@ export const SessionAnnotationProcessor: React.FC<
   };
   const { isV4 } = useReadPath();
   const [turnOrder, setTurnOrder] = useSessionTurnOrder();
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Fetch traces separately when v4 beta is enabled (events table path)
   // The byIdWithScoresFromEvents endpoint doesn't include traces array
@@ -204,6 +205,7 @@ export const SessionAnnotationProcessor: React.FC<
               onCheckedChange={(checked) => {
                 setTurnOrder(checked ? "newest-first" : "oldest-first");
                 setVisibleTraces(PAGE_SIZE);
+                scrollContainerRef.current?.scrollTo({ top: 0 });
               }}
             />
           </label>
@@ -212,7 +214,7 @@ export const SessionAnnotationProcessor: React.FC<
       </div>
 
       {/* Scrollable Content */}
-      <div key={turnOrder} className="flex-1 overflow-y-auto">
+      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto">
         <div className="p-4">
           {/* Loading state for v4 beta traces */}
           {isV4 && tracesFromEventsQuery.isLoading && (
