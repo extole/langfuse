@@ -8,6 +8,7 @@ import { type FilterState } from "@langfuse/shared";
 import { ConnectedModernSessionBodyLegacy } from "@/src/features/sessions/ConnectedModernSessionBodyLegacy";
 import { ConnectedModernSessionBodyTimeline } from "@/src/features/sessions/components/ConnectedModernSessionBodyTimeline/ConnectedModernSessionBodyTimeline";
 import { ModernSessionFilterControls } from "@/src/features/sessions/ModernSessionFilterControls";
+import { type SessionTurnOrder } from "@/src/features/sessions/sessionTurnOrder";
 import {
   type EventSession,
   type EventSessionTrace,
@@ -24,9 +25,11 @@ type ModernSessionProps = {
   };
   isTimelineEnabled: boolean;
   session: Pick<EventSession, "minTimestamp" | "maxTimestamp">;
+  /** Traces in display order, as `orderSessionTraces` returns them. */
   tracesState:
     | { type: "loading" }
     | { type: "loaded"; traces: EventSessionTrace[] };
+  turnOrder: SessionTurnOrder;
   projectId: string;
   sessionId: string;
   openPeek: (id: string, row: EventSessionTrace) => void;
@@ -54,6 +57,7 @@ export function ModernSession({
   isTimelineEnabled,
   session,
   tracesState,
+  turnOrder,
   projectId,
   sessionId,
   openPeek,
@@ -68,6 +72,7 @@ export function ModernSession({
 }: ModernSessionProps) {
   const sharedBodyProps = {
     tracesState,
+    turnOrder,
     projectId,
     sessionId,
     sessionMinTimestamp: session.minTimestamp,
@@ -142,6 +147,7 @@ export function ModernSession({
             <ConnectedModernSessionBodyTimeline
               customization={customization}
               tracesState={tracesState}
+              turnOrder={turnOrder}
               projectId={projectId}
               sessionId={sessionId}
               openPeek={openPeek}

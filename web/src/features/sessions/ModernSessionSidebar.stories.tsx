@@ -188,6 +188,7 @@ const toSidebarTraces = (
 ): ModernSessionSidebarTrace[] =>
   sourceTraces.map((trace, index) => ({
     trace,
+    traceIndex: index,
     turnNumber: index + 1,
     idleGapSeconds:
       index === 0
@@ -684,5 +685,53 @@ export const TestDistinguishesTraceLevelIO = meta.story({
 
     await userEvent.click(canvas.getByText("Trace-level I/O only"));
     await expect(args.onSelect).toHaveBeenCalledWith(0);
+  },
+});
+
+export const TestSelectsNewestFirstTurnByFeedPosition = meta.story({
+  name: "(Test) Selects newest-first turn by feed position",
+  args: {
+    ...loadedArgs,
+    traces: [...sidebarTraces].reverse().map((sidebarTrace, traceIndex) => ({
+      ...sidebarTrace,
+      traceIndex,
+    })),
+    activeTraceId: "turn-3",
+    onSelect: fn(),
+  },
+  play: async ({ args, canvasElement }) => {
+    assertLoadedArgs(args);
+    const canvas = within(canvasElement);
+
+    await userEvent.click(
+      await canvas.findByRole("button", { name: /^3 Summarize findings/i }),
+    );
+    await expect(args.onSelect).toHaveBeenLastCalledWith(0);
+
+    await userEvent.click(
+      canvas.getByRole("button", { name: /^Conversation closed\b/i }),
+    );
+    await expect(args.onSelect).toHaveBeenLastCalledWith(0, "event-1");
+  },
+});
+
+export const TestSelectsNewestFirstFlatTurnByFeedPosition = meta.story({
+  name: "(Test) Selects newest-first flat turn by feed position",
+  args: {
+    ...TestSelectsNewestFirstTurnByFeedPosition.input.args,
+    observationLayout: "flat",
+    onSelect: fn(),
+  },
+  play: async ({ args, canvasElement }) => {
+    assertLoadedArgs(args);
+    const canvas = within(canvasElement);
+
+    await userEvent.click(
+      await canvas.findByRole("button", { name: /^3 Summarize findings/i }),
+    );
+    await expect(args.onSelect).toHaveBeenLastCalledWith(0);
+
+    await userEvent.click(canvas.getByText("Conversation closed"));
+    await expect(args.onSelect).toHaveBeenLastCalledWith(0, "event-1");
   },
 });

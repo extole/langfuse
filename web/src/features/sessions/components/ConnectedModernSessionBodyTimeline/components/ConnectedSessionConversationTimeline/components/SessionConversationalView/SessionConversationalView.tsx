@@ -16,7 +16,7 @@ import { getSessionTranscriptRows } from "@/src/features/sessions/components/Con
 import { getSessionToolStatus } from "@/src/features/sessions/components/ConnectedModernSessionBodyTimeline/components/ConnectedSessionConversationTimeline/components/SessionConversationalView/fns/getSessionToolStatus";
 import { getSessionTranscriptThreads } from "../../fns/getSessionTranscriptThreads";
 import { getSessionConversationEntries } from "../../fns/getSessionConversationEntries";
-import { computeIdleGapSeconds } from "@/src/features/sessions/sessionIdleGap";
+import { computeIdleGapBetweenSeconds } from "@/src/features/sessions/sessionIdleGap";
 import { type EventSessionTrace } from "@/src/features/sessions/sessionDetailPageTypes";
 
 export function SessionConversationalView(
@@ -121,6 +121,7 @@ export function SessionConversationalView(
   const entries = getSessionConversationEntries(
     props.traces.map((item) => ({
       trace: item.trace,
+      turnNumber: item.turnNumber,
       transcript:
         item.state.type === "transcript"
           ? item.state.result.transcript
@@ -232,7 +233,7 @@ export function SessionConversationalView(
         idleGapSeconds:
           item.traceIndex === 0 || !item.isFirstThread
             ? null
-            : computeIdleGapSeconds(
+            : computeIdleGapBetweenSeconds(
                 props.traces[item.traceIndex - 1]!.trace,
                 item.trace,
               ),

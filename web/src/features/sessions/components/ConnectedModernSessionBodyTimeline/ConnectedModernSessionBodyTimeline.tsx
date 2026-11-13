@@ -14,6 +14,10 @@ import { useDebounce } from "@/src/hooks/useDebounce";
 import { api } from "@/src/utils/api";
 import { useSessionTraceTranscripts } from "@/src/features/sessions/hooks/useSessionTraceTranscripts";
 import { getSessionConversationEntries } from "./components/ConnectedSessionConversationTimeline/fns/getSessionConversationEntries";
+import {
+  getSessionTurnNumber,
+  type SessionTurnOrder,
+} from "@/src/features/sessions/sessionTurnOrder";
 
 const SIDEBAR_TRACE_CHUNK_SIZE = 20;
 const EMPTY_TRACES: EventSessionTrace[] = [];
@@ -24,9 +28,11 @@ type ConnectedModernSessionBodyTimelineProps = {
   customization?: ComponentProps<
     typeof ConnectedSessionConversationTimeline
   >["customization"];
+  /** Traces in display order, as `orderSessionTraces` returns them. */
   tracesState:
     | { type: "loading" }
     | { type: "loaded"; traces: EventSessionTrace[] };
+  turnOrder: SessionTurnOrder;
   projectId: string;
   sessionId: string;
   openPeek: OpenPeek;
@@ -36,6 +42,7 @@ type ConnectedModernSessionBodyTimelineProps = {
 export function ConnectedModernSessionBodyTimeline({
   customization,
   tracesState,
+  turnOrder,
   projectId,
   sessionId,
   openPeek,
@@ -43,6 +50,16 @@ export function ConnectedModernSessionBodyTimeline({
 }: ConnectedModernSessionBodyTimelineProps) {
   const traces =
     tracesState.type === "loaded" ? tracesState.traces : EMPTY_TRACES;
+  const timelineTraces: ConnectedSessionConversationTimelineItem[] = traces.map(
+    (trace, index) => ({
+      trace,
+      turnNumber: getSessionTurnNumber({
+        displayIndex: index,
+        traceCount: traces.length,
+        order: turnOrder,
+      }),
+    }),
+  );
   const [timelineVisibleTraceIds, setTimelineVisibleTraceIds] = useState<
     string[]
   >([]);
@@ -104,7 +121,7 @@ export function ConnectedModernSessionBodyTimeline({
   );
   const resultsByTraceId = useSessionTraceTranscripts({
     projectId,
-    traces: traces.map((trace, index) => ({ trace, turnNumber: index + 1 })),
+    traces: timelineTraces,
     activeTraceIds: activeTranscriptTraceIds,
     filter: filterState,
   });
@@ -126,10 +143,11 @@ export function ConnectedModernSessionBodyTimeline({
     : debouncedSearchQuery;
   const isSearchPending = search.trim() !== searchQuery;
   const entries = getSessionConversationEntries(
-    traces.map((trace) => {
+    timelineTraces.map(({ trace, turnNumber }) => {
       const result = resultsByTraceId.get(trace.id);
       return {
         trace,
+        turnNumber,
         transcript: result?.state === "loaded" ? result.transcript : undefined,
       };
     }),
@@ -205,14 +223,6 @@ export function ConnectedModernSessionBodyTimeline({
       return next;
     });
   };
-  const timelineTraces: ConnectedSessionConversationTimelineItem[] = traces.map(
-    (trace, index) => {
-      return {
-        trace,
-        turnNumber: index + 1,
-      };
-    },
-  );
   const handleSelect = (
     index: number,
     observationId?: string,

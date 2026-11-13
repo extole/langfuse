@@ -49,7 +49,7 @@ function SingleTraceMessagesView() {
     includeNestedThreads,
   );
   const entries = getSessionConversationEntries(
-    [{ trace: messageTrace, transcript: data?.transcript }],
+    [{ trace: messageTrace, turnNumber: 1, transcript: data?.transcript }],
     includeNestedThreads,
   );
   const traces: ComponentProps<typeof SessionConversationTimeline>["traces"] =
