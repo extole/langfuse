@@ -714,3 +714,24 @@ export const TestSelectsNewestFirstTurnByFeedPosition = meta.story({
     await expect(args.onSelect).toHaveBeenLastCalledWith(0, "event-1");
   },
 });
+
+export const TestSelectsNewestFirstFlatTurnByFeedPosition = meta.story({
+  name: "(Test) Selects newest-first flat turn by feed position",
+  args: {
+    ...TestSelectsNewestFirstTurnByFeedPosition.input.args,
+    observationLayout: "flat",
+    onSelect: fn(),
+  },
+  play: async ({ args, canvasElement }) => {
+    assertLoadedArgs(args);
+    const canvas = within(canvasElement);
+
+    await userEvent.click(
+      await canvas.findByRole("button", { name: /^3 Summarize findings/i }),
+    );
+    await expect(args.onSelect).toHaveBeenLastCalledWith(0);
+
+    await userEvent.click(canvas.getByText("Conversation closed"));
+    await expect(args.onSelect).toHaveBeenLastCalledWith(0, "event-1");
+  },
+});
