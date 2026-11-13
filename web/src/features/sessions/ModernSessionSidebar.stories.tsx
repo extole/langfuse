@@ -687,3 +687,30 @@ export const TestDistinguishesTraceLevelIO = meta.story({
     await expect(args.onSelect).toHaveBeenCalledWith(0);
   },
 });
+
+export const TestSelectsNewestFirstTurnByFeedPosition = meta.story({
+  name: "(Test) Selects newest-first turn by feed position",
+  args: {
+    ...loadedArgs,
+    traces: [...sidebarTraces].reverse().map((sidebarTrace, traceIndex) => ({
+      ...sidebarTrace,
+      traceIndex,
+    })),
+    activeTraceId: "turn-3",
+    onSelect: fn(),
+  },
+  play: async ({ args, canvasElement }) => {
+    assertLoadedArgs(args);
+    const canvas = within(canvasElement);
+
+    await userEvent.click(
+      await canvas.findByRole("button", { name: /^3 Summarize findings/i }),
+    );
+    await expect(args.onSelect).toHaveBeenLastCalledWith(0);
+
+    await userEvent.click(
+      canvas.getByRole("button", { name: /^Conversation closed\b/i }),
+    );
+    await expect(args.onSelect).toHaveBeenLastCalledWith(0, "event-1");
+  },
+});
