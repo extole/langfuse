@@ -150,7 +150,6 @@ export function ConnectedSessionListBody({
         state="loaded"
         traces={isSearchPending ? [] : sidebarTraces}
         activeTraceId={activeTraceId}
-        onCustomizeView={onCustomizeView}
         activeFilterCount={activeFilterCount}
         observationLayout="flat"
         search={search}
@@ -224,9 +223,6 @@ export function ConnectedSessionListBody({
       search={search}
       isLoading={tracesState.type === "loading"}
       renderSidebar={sidebar}
-      customization={
-        onCustomizeView ? { activeFilterCount, onCustomizeView } : undefined
-      }
     >
       {content}
     </SessionViewLayout>

@@ -598,15 +598,10 @@ function TopicsWorkspaceContent({
               onConfigure: openConfigure,
               onHistory: openHistory,
               onEditRun:
-                canWrite && selectedRule && !showOnboarding
+                selectedRule && !showOnboarding
                   ? () => openSliceDialog({ kind: "rule", rule: selectedRule })
                   : undefined,
-              onNewAnalysis: () =>
-                openSliceDialog({
-                  kind: "analysis",
-                  filter:
-                    selectedAnalysis?.filter ?? selectedRule?.filter ?? [],
-                }),
+              onNewAnalysis: () => openSliceDialog({ kind: "analysis" }),
               showUnassigned,
               onShowUnassignedChange: setShowUnassigned,
             });
